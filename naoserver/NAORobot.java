@@ -5,6 +5,7 @@ import com.aldebaran.qi.CallError;
 import com.aldebaran.qi.helper.proxies.ALBehaviorManager;
 import com.aldebaran.qi.helper.proxies.ALMemory;
 import com.aldebaran.qi.helper.proxies.ALTextToSpeech;
+import com.aldebaran.qi.helper.proxies.PackageManager;
 
 
 public class NAORobot {
@@ -14,6 +15,7 @@ public class NAORobot {
     private ALTextToSpeech tts;
     private ALMemory memory;
     private ALBehaviorManager behaviorManager;
+    private PackageManager PackageManager;
 
     public NAORobot(String url, String[] args) {
 
@@ -28,6 +30,7 @@ public class NAORobot {
             this.tts = new ALTextToSpeech(this.app.session());
             this.memory = new ALMemory(this.app.session());
             this.behaviorManager = new ALBehaviorManager(this.app.session());
+            this.PackageManager = new PackageManager(this.app.session());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -45,12 +48,35 @@ public class NAORobot {
         return(new Object[]{cpuTemp, batteryTemp});
     }
 
-    public synchronized void startBehavior(String behavior) throws InterruptedException, CallError {
-        if(!this.behaviorManager.async().isBehaviorRunning(behavior).get()) {
-            this.behaviorManager.async().startBehavior(behavior);
+    public synchronized void installBehavior(String behavior) throws InterruptedException, CallError {
+        if(!this.behaviorManager.async().isBehaviorInstalled(behavior).get()) {
+            this.PackageManager.async().install(behavior);
         }
         else {
-            System.out.println("Behavior is already running!");
+            System.out.println("Package / Behavior already installed...");
+        }
+    }
+
+    public synchronized void stopBehavior(String behavior) throws InterruptedException, CallError {
+        if(this.behaviorManager.async().isBehaviorRunning(behavior).get()) {
+            this.behaviorManager.async().stopBehavior(behavior);
+        }
+        else {
+            System.out.println("Couldn't find a running behavior by that name...");
+        }
+    }
+
+    public synchronized void startBehavior(String behavior) throws InterruptedException, CallError {
+        if(this.behaviorManager.async().isBehaviorInstalled(behavior).get()) {
+            if(!this.behaviorManager.async().isBehaviorRunning(behavior).get()) {
+                this.behaviorManager.async().runBehavior(behavior);
+            }
+            else {
+                System.out.println("Behavior is already running");
+            }
+        }
+        else {
+            System.out.println("Behavior not found..");
         }
     }
 
