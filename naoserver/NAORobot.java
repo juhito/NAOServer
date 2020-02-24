@@ -1,3 +1,5 @@
+package naoserver;
+
 import com.aldebaran.qi.Application;
 import com.aldebaran.qi.CallError;
 import com.aldebaran.qi.helper.proxies.ALBehaviorManager;

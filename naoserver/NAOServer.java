@@ -1,3 +1,5 @@
+package naoserver;
+
 import java.net.*;
 import java.util.Calendar;
 
