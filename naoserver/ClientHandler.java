@@ -1,3 +1,5 @@
+package naoserver;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -41,14 +43,14 @@ public class ClientHandler implements Runnable {
                 Collection<Object> c = clientArgumentsArray;
                 c.remove(clientMessage);
                 clientMessageObject = c.toArray();
-                out.writeObject(this.processFunction(clientMessage, clientMessageObject));
+                out.writeObject(this.findFunction(clientMessage, clientMessageObject));
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    private Object processFunction(String functionName, Object[] args) {
+    private Object findFunction(String functionName, Object[] args) {
         try {
 
             Method method;
@@ -68,10 +70,9 @@ public class ClientHandler implements Runnable {
             }
 
             return messageToClient;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println("Client requested function does not exists on the server");
-            return "Client requested function does not exists on the server";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return("Sorry, couldn't find that function.");
         }
     }
 
@@ -83,11 +84,11 @@ public class ClientHandler implements Runnable {
                 }
             }
             // If nothing have been found return null value
-            return null;
+            return(null);
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            return null;
+            return(null);
         }
     }
 }
