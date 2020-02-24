@@ -9,7 +9,7 @@ Server code for NAOController App. Uses Java sockets and multi-threading
 
 ## Authors
 
-* **juhito**
+* **[juhito](https://github.com/juhito)**
 
 ## Contributors
 
