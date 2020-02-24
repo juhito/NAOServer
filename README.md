@@ -17,7 +17,7 @@ Server code for NAOController App. Uses Java sockets and multi-threading
 
 ## License
 
-* MIT License
+* [MIT License](https://github.com/juhito/NAOController/blob/development/LICENSE)
 
 ## Acknowledgments
 
