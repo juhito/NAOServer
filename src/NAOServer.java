@@ -1,11 +1,9 @@
-
 import java.net.*;
 import java.util.Calendar;
 
 
 public class NAOServer {
     private ServerSocket server;
-    private int clientID = 0;
 
     public NAOServer(String ip) throws Exception {
         this.server = new ServerSocket();
@@ -19,9 +17,8 @@ public class NAOServer {
         while(true) {
             try {
                 Socket socket = server.accept();
-
-                clientID++;
-                System.out.println("Starting a new thread for client: " + clientID + " at: " +
+                
+                System.out.println("Starting a new thread for client: " + socket.getInetAddress().getHostName() + " at: " +
                         Calendar.getInstance().getTime());
 
                 new Thread(new ClientHandler(socket, args)).start();
