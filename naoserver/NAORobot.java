@@ -15,7 +15,7 @@ public class NAORobot {
     private ALTextToSpeech tts;
     private ALMemory memory;
     private ALBehaviorManager behaviorManager;
-    private PackageManager PackageManager;
+    private PackageManager packageManager;
 
     public NAORobot(String url, String[] args) {
 
@@ -30,7 +30,7 @@ public class NAORobot {
             this.tts = new ALTextToSpeech(this.app.session());
             this.memory = new ALMemory(this.app.session());
             this.behaviorManager = new ALBehaviorManager(this.app.session());
-            this.PackageManager = new PackageManager(this.app.session());
+            this.packageManager = new PackageManager(this.app.session());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,7 +50,7 @@ public class NAORobot {
 
     public synchronized void installBehavior(String behavior) throws InterruptedException, CallError {
         if(!this.behaviorManager.async().isBehaviorInstalled(behavior).get()) {
-            this.PackageManager.async().install(behavior);
+            this.packageManager.async().install(behavior);
         }
         else {
             System.out.println("Package / Behavior already installed...");
