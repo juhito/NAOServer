@@ -7,9 +7,11 @@ import java.util.Calendar;
 public class NAOServer {
     private ServerSocket server;
 
+
     public NAOServer(String ip) throws Exception {
         this.server = new ServerSocket();
         this.server.bind(new InetSocketAddress(ip, 8888));
+        new Thread(new BroadcastServer(ip)).start();
     }
 
     private void listen(String[] args) {
@@ -32,7 +34,7 @@ public class NAOServer {
 
 
     public static void main(String[] args) throws Exception {
-		NAOServer nss = new NAOServer("192.168.1.144");
+		NAOServer nss = new NAOServer("192.168.10.49");
 
 		nss.listen(args);
 	
