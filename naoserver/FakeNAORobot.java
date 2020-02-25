@@ -40,7 +40,7 @@ public class FakeNAORobot {
 
     
 }
-
+/* Implement this later maybe
 class FakeBehaviorManager {
 
     private FakeBehavior runningBehavior;
@@ -113,3 +113,4 @@ class FakeBehavior implements Runnable {
 
     }
 }
+*/

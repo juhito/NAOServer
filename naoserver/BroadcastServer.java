@@ -8,7 +8,7 @@ import java.net.InetAddress;
 public class BroadcastServer implements Runnable {
     private DatagramSocket scannerSocket;
 
-    public BroadcastServer(String ip) throws Exception {
+    public BroadcastServer() throws Exception {
         this.scannerSocket = new DatagramSocket(8889, InetAddress.getByName("0.0.0.0"));
         this.scannerSocket.setBroadcast(true);
     }

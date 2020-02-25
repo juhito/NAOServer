@@ -11,7 +11,7 @@ public class NAOServer {
     public NAOServer(String ip) throws Exception {
         this.server = new ServerSocket();
         this.server.bind(new InetSocketAddress(ip, 8888));
-        new Thread(new BroadcastServer(ip)).start();
+        new Thread(new BroadcastServer()).start();
     }
 
     private void listen(String[] args) {
