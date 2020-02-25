@@ -1,11 +1,15 @@
 package naoserver;
 
+import java.util.List;
 import com.aldebaran.qi.Application;
 import com.aldebaran.qi.CallError;
+import com.aldebaran.qi.Tuple4;
+import com.aldebaran.qi.helper.proxies.ALBattery;
 import com.aldebaran.qi.helper.proxies.ALBehaviorManager;
 import com.aldebaran.qi.helper.proxies.ALMemory;
 import com.aldebaran.qi.helper.proxies.ALTextToSpeech;
 import com.aldebaran.qi.helper.proxies.PackageManager;
+import com.aldebaran.qi.helper.proxies.ALSystem;
 
 
 public class NAORobot {
@@ -14,8 +18,10 @@ public class NAORobot {
     // submodules
     private ALTextToSpeech tts;
     private ALMemory memory;
+    private ALBattery batteryManager;
     private ALBehaviorManager behaviorManager;
     private PackageManager packageManager;
+    private ALSystem systemManager;
 
     public NAORobot(String url, String[] args) {
 
@@ -31,6 +37,8 @@ public class NAORobot {
             this.memory = new ALMemory(this.app.session());
             this.behaviorManager = new ALBehaviorManager(this.app.session());
             this.packageManager = new PackageManager(this.app.session());
+            this.systemManager = new ALSystem(this.app.session());
+            this.batteryManager = new ALBattery(this.app.session());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -48,12 +56,25 @@ public class NAORobot {
         return(new Object[]{cpuTemp, batteryTemp});
     }
 
+    public synchronized Object[] getBatteryData() throws InterruptedException, CallError {
+        return(new Object[]{this.batteryManager.async().getBatteryCharge().get()});
+    }
+
     public synchronized void installBehavior(String behavior) throws InterruptedException, CallError {
         if(!this.behaviorManager.async().isBehaviorInstalled(behavior).get()) {
             this.packageManager.async().install(behavior);
         }
         else {
             System.out.println("Package / Behavior already installed...");
+        }
+    }
+
+    public synchronized void getSystemData() throws InterruptedException, CallError {
+        List<Tuple4<String, String, Long, Long>> data = this.systemManager.async().diskFree(true).get();
+
+        for(int i = 0; i < data.size(); i++) {
+            System.out.println("var0: " + data.get(i).var0 + ", var1: " + data.get(i).var1 + ", var2: " + data.get(i).var2
+                + ", var3: " + data.get(i).var3);
         }
     }
 
