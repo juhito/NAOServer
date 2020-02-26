@@ -1,4 +1,4 @@
-# NAOController
+# NAOServer
 
 Server code for NAOController App. Uses Java sockets and multi-threading
 
