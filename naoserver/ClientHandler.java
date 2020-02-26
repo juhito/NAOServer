@@ -35,7 +35,7 @@ public class ClientHandler implements Runnable {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
-            while (true) {
+            while (this.socket.isConnected()) {
                 clientMessageObject = (Object[]) in.readObject();
                 clientMessage = (String) clientMessageObject[0];
 
