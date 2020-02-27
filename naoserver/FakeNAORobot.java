@@ -1,5 +1,6 @@
 package naoserver;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class FakeNAORobot {
@@ -36,6 +37,16 @@ public class FakeNAORobot {
         return(new Object[] {
             randomBATCharge
         });
+    }
+
+    public synchronized Object[] getCommands() throws InterruptedException {
+        ArrayList<String> methods = new ArrayList<String>();
+        
+        for(Method m : this.getClass().getDeclaredMethods()) {
+            methods.add(m.getName());    
+        }
+
+        return(methods.toArray());
     }
 
     

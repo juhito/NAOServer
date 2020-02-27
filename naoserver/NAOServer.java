@@ -34,7 +34,7 @@ public class NAOServer {
 
 
     public static void main(String[] args) throws Exception {
-		NAOServer nss = new NAOServer("192.168.10.49");
+		NAOServer nss = new NAOServer("192.168.43.243");
 
 		nss.listen(args);
 	

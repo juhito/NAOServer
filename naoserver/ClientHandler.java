@@ -52,7 +52,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private Object findFunction(String functionName, Object[] args) {
+    private Object[] findFunction(String functionName, Object[] args) {
         try {
 
             Method method;
@@ -73,8 +73,8 @@ public class ClientHandler implements Runnable {
 
             return messageToClient;
         } catch (Exception e) {
-            e.printStackTrace();
-            return("Sorry, couldn't find that function.");
+            System.out.println("Error: " + e.toString() + ", sending info to client!");
+            return(new Object[]{"Sorry, that method isn't implement on the server!"});
         }
     }
 
