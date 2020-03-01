@@ -1,5 +1,6 @@
 package naoserver;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.aldebaran.qi.Application;
 import com.aldebaran.qi.CallError;
@@ -45,19 +46,22 @@ public class NAORobot {
         }
     }
 
-    public synchronized Object[] getBehaviors() throws InterruptedException, CallError {
-        return(new Object[]{this.behaviorManager.async().getInstalledBehaviors().get()});
+    public synchronized List<String> getBehaviors() throws InterruptedException, CallError {
+        return(behaviorManager.async().getInstalledBehaviors().get());
     }
 
-    public synchronized Object[] getTempData() throws InterruptedException, CallError {
-        Object cpuTemp = this.memory.async().getData("Device/SubDeviceList/Head/Temperature/Sensor/Value").get();
-        Object batteryTemp = this.memory.async().getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value").get();
-
-        return(new Object[]{cpuTemp, batteryTemp});
+    public synchronized List<Object> getTempData() throws InterruptedException, CallError {
+        Object cpuTemp = memory.async().getData("Device/SubDeviceList/Head/Temperature/Sensor/Value").get();
+        Object batteryTemp = memory.async().getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value").get();
+        
+        return(new ArrayList<Object>() {{
+            add(cpuTemp); 
+            add(batteryTemp);
+        }});
     }
 
-    public synchronized Object[] getBatteryData() throws InterruptedException, CallError {
-        return(new Object[]{this.batteryManager.async().getBatteryCharge().get()});
+    public synchronized Integer getBatteryData() throws InterruptedException, CallError {
+        return(batteryManager.async().getBatteryCharge().get());
     }
 
     public synchronized void installBehavior(String behavior) throws InterruptedException, CallError {
