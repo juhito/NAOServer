@@ -46,8 +46,5 @@ public class BroadcastServer implements Runnable {
         catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-
-    
+    }    
 }

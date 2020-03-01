@@ -52,23 +52,23 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private Object[] findFunction(String functionName, Object[] args) {
+    private Object findFunction(String functionName, Object[] args) {
         try {
 
             Method method;
-            Object[] messageToClient;
+            Object messageToClient;
 
             if (args.length >= 1) {
                 method = robot.getClass().getDeclaredMethod(functionName, getParameterTypes(robot.getClass(), functionName));
-				messageToClient = (Object[]) method.invoke(robot, args);
+				messageToClient = method.invoke(robot, args);
             }
             else {
                 method = robot.getClass().getDeclaredMethod(functionName);
-                messageToClient = (Object[]) method.invoke(robot);
+                messageToClient = method.invoke(robot);
             }
 
             if (messageToClient != null) {
-                System.out.println("Sending to client: " + Arrays.toString(messageToClient));
+                System.out.println("Sending to client: " + messageToClient);
             }
 
             return messageToClient;
