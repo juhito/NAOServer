@@ -74,7 +74,7 @@ public class ClientHandler implements Runnable {
             return messageToClient;
         } catch (Exception e) {
             System.out.println("Error: " + e.toString() + ", sending info to client!");
-            return(new Object[]{"Sorry, that method isn't implement on the server!"});
+            return("Sorry, that method isn't implement on the server!");
         }
     }
 
