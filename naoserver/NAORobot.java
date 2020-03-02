@@ -2,12 +2,16 @@ package naoserver;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.aldebaran.qi.Application;
 import com.aldebaran.qi.CallError;
 import com.aldebaran.qi.Tuple4;
 import com.aldebaran.qi.helper.proxies.ALBattery;
 import com.aldebaran.qi.helper.proxies.ALBehaviorManager;
 import com.aldebaran.qi.helper.proxies.ALMemory;
+import com.aldebaran.qi.helper.proxies.ALMotion;
+import com.aldebaran.qi.helper.proxies.ALNavigation;
+import com.aldebaran.qi.helper.proxies.ALRobotPosture;
 import com.aldebaran.qi.helper.proxies.ALTextToSpeech;
 import com.aldebaran.qi.helper.proxies.PackageManager;
 import com.aldebaran.qi.helper.proxies.ALSystem;
@@ -17,9 +21,12 @@ public class NAORobot {
     private Application app;
 
     // submodules
-    private ALTextToSpeech tts;
-    private ALMemory memory;
+    private ALTextToSpeech ttsManager;
+    private ALMemory memoryManager;
     private ALBattery batteryManager;
+    private ALMotion movementManager;
+    private ALNavigation navigationManager;
+    private ALRobotPosture postureManager;
     private ALBehaviorManager behaviorManager;
     private PackageManager packageManager;
     private ALSystem systemManager;
@@ -28,18 +35,21 @@ public class NAORobot {
 
         try {
             // create a new connection to NAO
-            this.app = new Application(args, url);
-            this.app.start();
+            app = new Application(args, url);
+            app.start();
 
             System.out.println("Connection to NAO was successful");
 
             // Start submodules
-            this.tts = new ALTextToSpeech(this.app.session());
-            this.memory = new ALMemory(this.app.session());
-            this.behaviorManager = new ALBehaviorManager(this.app.session());
-            this.packageManager = new PackageManager(this.app.session());
-            this.systemManager = new ALSystem(this.app.session());
-            this.batteryManager = new ALBattery(this.app.session());
+            ttsManager = new ALTextToSpeech(app.session());
+            memoryManager = new ALMemory(app.session());
+            movementManager = new ALMotion(app.session());
+            navigationManager = new ALNavigation(app.session());
+            postureManager = new ALRobotPosture(app.session());
+            behaviorManager = new ALBehaviorManager(app.session());
+            packageManager = new PackageManager(app.session());
+            systemManager = new ALSystem(app.session());
+            batteryManager = new ALBattery(app.session());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,13 +61,15 @@ public class NAORobot {
     }
 
     public synchronized List<Object> getTempData() throws InterruptedException, CallError {
-        Object cpuTemp = memory.async().getData("Device/SubDeviceList/Head/Temperature/Sensor/Value").get();
-        Object batteryTemp = memory.async().getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value").get();
+        Object cpuTemp = memoryManager.async().getData("Device/SubDeviceList/Head/Temperature/Sensor/Value").get();
+        Object batteryTemp = memoryManager.async().getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value").get();
         
-        return(new ArrayList<Object>() {{
-            add(cpuTemp); 
-            add(batteryTemp);
-        }});
+        List<Object> data = new ArrayList<Object>();
+
+        data.add(cpuTemp);
+        data.add(batteryTemp);
+
+        return(data);
     }
 
     public synchronized Integer getBatteryData() throws InterruptedException, CallError {
@@ -65,8 +77,8 @@ public class NAORobot {
     }
 
     public synchronized void installBehavior(String behavior) throws InterruptedException, CallError {
-        if(!this.behaviorManager.async().isBehaviorInstalled(behavior).get()) {
-            this.packageManager.async().install(behavior);
+        if(!behaviorManager.async().isBehaviorInstalled(behavior).get()) {
+            packageManager.async().install(behavior);
         }
         else {
             System.out.println("Package / Behavior already installed...");
@@ -74,7 +86,7 @@ public class NAORobot {
     }
 
     public synchronized void getSystemData() throws InterruptedException, CallError {
-        List<Tuple4<String, String, Long, Long>> data = this.systemManager.async().diskFree(true).get();
+        List<Tuple4<String, String, Long, Long>> data = systemManager.async().diskFree(true).get();
 
         for(int i = 0; i < data.size(); i++) {
             System.out.println("var0: " + data.get(i).var0 + ", var1: " + data.get(i).var1 + ", var2: " + data.get(i).var2
@@ -83,8 +95,8 @@ public class NAORobot {
     }
 
     public synchronized void stopBehavior(String behavior) throws InterruptedException, CallError {
-        if(this.behaviorManager.async().isBehaviorRunning(behavior).get()) {
-            this.behaviorManager.async().stopBehavior(behavior);
+        if(behaviorManager.async().isBehaviorRunning(behavior).get()) {
+            behaviorManager.async().stopBehavior(behavior);
         }
         else {
             System.out.println("Couldn't find a running behavior by that name...");
@@ -92,9 +104,9 @@ public class NAORobot {
     }
 
     public synchronized void startBehavior(String behavior) throws InterruptedException, CallError {
-        if(this.behaviorManager.async().isBehaviorInstalled(behavior).get()) {
-            if(!this.behaviorManager.async().isBehaviorRunning(behavior).get()) {
-                this.behaviorManager.async().runBehavior(behavior);
+        if(behaviorManager.async().isBehaviorInstalled(behavior).get()) {
+            if(!behaviorManager.async().isBehaviorRunning(behavior).get()) {
+                behaviorManager.async().runBehavior(behavior);
             }
             else {
                 System.out.println("Behavior is already running");
@@ -105,7 +117,45 @@ public class NAORobot {
         }
     }
 
+    public synchronized String enableExternalCollisionProtection() throws InterruptedException, CallError {
+        if(movementManager.async().getExternalCollisionProtectionEnabled("All").get()) {
+            return(new String("ExternalCollisionProtection is already enabled"));
+        }
+        
+        movementManager.async().setExternalCollisionProtectionEnabled("All", true);
+        return(new String("ExternalCollisionProtection enabled!"));
+    }
+
+    public synchronized String setSecurityDistance(float distance) throws InterruptedException, CallError {
+        if(movementManager.async().getExternalCollisionProtectionEnabled("All").get()) {
+            movementManager.async().setOrthogonalSecurityDistance(distance);
+            return(new String("Security distance set!"));
+        }
+
+        return(new String("Something went wrong, security distance couldn't be set"));
+    }
+
+    public synchronized void naoMove(float x, float y, float theta) throws InterruptedException, CallError {
+        // wake up nao
+        if(!movementManager.async().robotIsWakeUp().get()) {
+            movementManager.async().wakeUp();
+        }
+
+        // make nao stand
+        if(!postureManager.async().getPosture().get().equals("StandInit")) {
+            postureManager.async().goToPosture("StandInit", 0.5f);
+        }
+
+        // move nao
+        navigationManager.async().move(x, y, theta);
+    }
+
+    public synchronized List<Float> getPosition() throws InterruptedException, CallError {
+        return(movementManager.async().getPosition("Gyrometer", 2, false).get());
+    }
+
+
     public synchronized void naoSpeak(String message) throws InterruptedException, CallError {
-        this.tts.async().say(message);
+        ttsManager.async().say(message);
     }
 }
