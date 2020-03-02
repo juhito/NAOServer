@@ -12,8 +12,7 @@ import java.util.Collection;
 public class ClientHandler implements Runnable {
     private Socket socket;
     private Object[] clientMessageObject;
-    private ArrayList<Object> clientArgumentsArray;
-    private String clientMessage;
+    private String clientCommand;
 
     //private static NAORobot robot;
     private static FakeNAORobot robot;
@@ -37,15 +36,21 @@ public class ClientHandler implements Runnable {
 
             while (socket.isConnected()) {
                 clientMessageObject = (Object[]) in.readObject();
-                clientMessage = (String) clientMessageObject[0];
+                clientCommand = (String) clientMessageObject[0];
 
-				System.out.println("Received from client: " + Arrays.toString(clientMessageObject));
-
-                clientArgumentsArray = new ArrayList<Object>(Arrays.asList(clientMessageObject));
-                Collection<Object> c = clientArgumentsArray;
-                c.remove(clientMessage);
-                clientMessageObject = c.toArray();
-                out.writeObject(this.findFunction(clientMessage, clientMessageObject));
+                if(clientMessageObject.length > 1) {
+                    System.out.println(String.format("Received from client: %s %s",
+                        (String) clientMessageObject[0], 
+                        Arrays.toString((Object[]) clientMessageObject[1])));
+                }
+                else {
+                    System.out.println("Received from client: " + Arrays.toString(clientMessageObject));
+                }
+                
+                ArrayList<Object> a = new ArrayList<Object>(Arrays.asList(clientMessageObject));
+                a.remove(clientCommand);
+                clientMessageObject = a.toArray();
+                out.writeObject(this.findFunction(clientCommand, clientMessageObject));
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -54,13 +59,12 @@ public class ClientHandler implements Runnable {
 
     private Object findFunction(String functionName, Object[] args) {
         try {
-
             Method method;
             Object messageToClient;
 
             if (args.length >= 1) {
                 method = robot.getClass().getDeclaredMethod(functionName, getParameterTypes(robot.getClass(), functionName));
-				messageToClient = method.invoke(robot, args);
+				messageToClient = method.invoke(robot, (Object[]) args[0]);
             }
             else {
                 method = robot.getClass().getDeclaredMethod(functionName);
@@ -73,8 +77,8 @@ public class ClientHandler implements Runnable {
 
             return messageToClient;
         } catch (Exception e) {
-            System.out.println("Error: " + e.toString() + ", sending info to client!");
-            return("Sorry, that method isn't implement on the server!");
+            System.out.println("Error: " + e.toString());
+            return(new String("Sorry, that method isn't implement on the server!"));
         }
     }
 

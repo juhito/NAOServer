@@ -11,29 +11,27 @@ public class FakeNAORobot {
         System.out.println("Connection to fake NAO was successful");
     }
 
-
     public synchronized List<String> getBehaviors() throws InterruptedException {
-        
-        List<String> behaviorList = new ArrayList<>();
+        return(new ArrayList<String>() {{
+            add("Behavior1");
+            add("Behavior2");
+            add("taichi-dance-free");
+            add("football");
+        }});
+    }
 
-        behaviorList.add("Behavior1");
-        behaviorList.add("Behavior2");
-        behaviorList.add("taichi-dance-free");
-        behaviorList.add("football");
-
-        return(behaviorList);
+    public synchronized void naoMove(float x, float y) throws InterruptedException {
+        System.out.println(String.format("nao moved by: %.2f, %.2f", x, y));
     }
 
     public synchronized List<Double> getTempData() throws InterruptedException {
-
         Double randomCPUTemp = 1.0 + Math.random() * (80.0 - 1.0);
         Double randomBATTemp = 1.0 + Math.random() * (80.0 - 1.0);
 
-        List<Double> dataList = new ArrayList<Double>();
-        dataList.add(randomCPUTemp);
-        dataList.add(randomBATTemp);
-
-        return(dataList);
+        return(new ArrayList<Double>() {{
+            add(randomCPUTemp);
+            add(randomBATTemp);
+        }});
     }
 
     public synchronized Double getBatteryData() throws InterruptedException {
