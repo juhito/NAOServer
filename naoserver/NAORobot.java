@@ -1,6 +1,9 @@
 package naoserver;
 
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.aldebaran.qi.Application;
@@ -13,6 +16,7 @@ import com.aldebaran.qi.helper.proxies.ALMotion;
 import com.aldebaran.qi.helper.proxies.ALNavigation;
 import com.aldebaran.qi.helper.proxies.ALRobotPosture;
 import com.aldebaran.qi.helper.proxies.ALTextToSpeech;
+import com.aldebaran.qi.helper.proxies.ALVideoDevice;
 import com.aldebaran.qi.helper.proxies.PackageManager;
 import com.aldebaran.qi.helper.proxies.ALSystem;
 
@@ -26,7 +30,7 @@ public class NAORobot {
     private ALBattery batteryManager;
     private ALMotion movementManager;
     private ALNavigation navigationManager;
-    private ALRobotPosture postureManager;
+    private ALVideoDevice cameraManager;
     private ALBehaviorManager behaviorManager;
     private PackageManager packageManager;
     private ALSystem systemManager;
@@ -45,7 +49,7 @@ public class NAORobot {
             memoryManager = new ALMemory(app.session());
             movementManager = new ALMotion(app.session());
             navigationManager = new ALNavigation(app.session());
-            postureManager = new ALRobotPosture(app.session());
+            cameraManager = new ALVideoDevice(app.session());
             behaviorManager = new ALBehaviorManager(app.session());
             packageManager = new PackageManager(app.session());
             systemManager = new ALSystem(app.session());
@@ -71,6 +75,43 @@ public class NAORobot {
 
         return(data);
     }
+
+    public synchronized List<Object> takeImage() throws InterruptedException, CallError {
+        String device = cameraManager.async().subscribeCamera("test", 0, 1, 13, 10).get();
+        Object imageObject = cameraManager.async().getDirectRawImageRemote(device).get();
+
+        List<Object> data = (ArrayList<Object>) imageObject;
+
+        System.out.println(data.get(6));
+        
+        ByteBuffer dataTest = ((ByteBuffer) data.get(6));
+        ByteBuffer byteBuffer = ByteBuffer.allocate(dataTest.capacity());
+
+        dataTest.flip();
+        byteBuffer.put(dataTest);
+        dataTest.compact();
+
+        byte[] byteData;
+      
+        if(byteBuffer.hasArray()) {
+            byteData = byteBuffer.array();
+        }
+        else {
+            byteData = new byte[byteBuffer.capacity()];
+            ((ByteBuffer) byteBuffer.duplicate().clear()).get(byteData);
+        }
+    
+        data.set(6, byteData);
+        
+
+        cameraManager.async().releaseDirectRawImage(device);
+        cameraManager.async().unsubscribe(device);
+
+        System.out.println("Original byteBuffer: " + byteBuffer + "\n Original byteBuffer as byte[]: " + byteData);
+
+        return(data);
+    }
+
 
     public synchronized Integer getBatteryData() throws InterruptedException, CallError {
         return(batteryManager.async().getBatteryCharge().get());
@@ -142,12 +183,14 @@ public class NAORobot {
         }
 
         // make nao stand
+        /*
         if(!postureManager.async().getPosture().get().equals("StandInit")) {
             postureManager.async().goToPosture("StandInit", 0.5f);
         }
+        */
 
         // move nao
-        navigationManager.async().move(x, y, theta);
+        navigationManager.async().moveTo(x, y, theta);
     }
 
     public synchronized List<Float> getPosition() throws InterruptedException, CallError {
@@ -158,4 +201,14 @@ public class NAORobot {
     public synchronized void naoSpeak(String message) throws InterruptedException, CallError {
         ttsManager.async().say(message);
     }
+
+    public synchronized List<String> getCommands() throws InterruptedException {
+        List<String> methods = new ArrayList<String>();
+        
+        for(Method m : this.getClass().getDeclaredMethods()) {
+            methods.add(m.getName());    
+        }
+
+        return(methods);
+    }  
 }

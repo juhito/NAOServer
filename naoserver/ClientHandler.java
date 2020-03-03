@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 
 public class ClientHandler implements Runnable {
     private Socket socket;
@@ -15,15 +14,15 @@ public class ClientHandler implements Runnable {
     private String clientCommand;
 
     //private static NAORobot robot;
-    private static FakeNAORobot robot;
+    private static NAORobot robot;
 
     public ClientHandler(Socket socket, String[] args) {
         this.socket = socket;
         System.out.println("Client: " + socket.getInetAddress().getHostAddress() + " connected");
 
         if(robot == null)
-            //robot = new NAORobot("tcp://192.168.1.144:9559", args);
-            robot = new FakeNAORobot("", args);
+            robot = new NAORobot("tcp://192.168.1.118:9559", args);
+            //robot = new FakeNAORobot("", args);
 		else
 			System.out.println("ROBOT ALREADY MADE YES");
     }
@@ -77,7 +76,7 @@ public class ClientHandler implements Runnable {
 
             return messageToClient;
         } catch (Exception e) {
-            System.out.println("Error: " + e.toString());
+            e.printStackTrace();
             return(new String("Sorry, that method isn't implement on the server!"));
         }
     }
