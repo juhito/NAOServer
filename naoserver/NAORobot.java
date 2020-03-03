@@ -84,12 +84,7 @@ public class NAORobot {
 
         System.out.println(data.get(6));
         
-        ByteBuffer dataTest = ((ByteBuffer) data.get(6));
-        ByteBuffer byteBuffer = ByteBuffer.allocate(dataTest.capacity());
-
-        dataTest.flip();
-        byteBuffer.put(dataTest);
-        dataTest.compact();
+        ByteBuffer byteBuffer = (ByteBuffer) data.get(6);
 
         byte[] byteData;
       
@@ -101,9 +96,9 @@ public class NAORobot {
             ((ByteBuffer) byteBuffer.duplicate().clear()).get(byteData);
         }
     
+        data.remove(6);
         data.set(6, byteData);
         
-
         cameraManager.async().releaseDirectRawImage(device);
         cameraManager.async().unsubscribe(device);
 
