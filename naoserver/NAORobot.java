@@ -1,10 +1,17 @@
 package naoserver;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import com.aldebaran.qi.Application;
 import com.aldebaran.qi.CallError;
@@ -14,12 +21,12 @@ import com.aldebaran.qi.helper.proxies.ALBehaviorManager;
 import com.aldebaran.qi.helper.proxies.ALMemory;
 import com.aldebaran.qi.helper.proxies.ALMotion;
 import com.aldebaran.qi.helper.proxies.ALNavigation;
+import com.aldebaran.qi.helper.proxies.ALPhotoCapture;
 import com.aldebaran.qi.helper.proxies.ALRobotPosture;
 import com.aldebaran.qi.helper.proxies.ALTextToSpeech;
 import com.aldebaran.qi.helper.proxies.ALVideoDevice;
 import com.aldebaran.qi.helper.proxies.PackageManager;
 import com.aldebaran.qi.helper.proxies.ALSystem;
-
 
 public class NAORobot {
     private Application app;
@@ -30,7 +37,8 @@ public class NAORobot {
     private ALBattery batteryManager;
     private ALMotion movementManager;
     private ALNavigation navigationManager;
-    private ALVideoDevice cameraManager;
+    private ALPhotoCapture cameraManager;
+    private ALVideoDevice videoDeviceManager;
     private ALBehaviorManager behaviorManager;
     private PackageManager packageManager;
     private ALSystem systemManager;
@@ -49,7 +57,8 @@ public class NAORobot {
             memoryManager = new ALMemory(app.session());
             movementManager = new ALMotion(app.session());
             navigationManager = new ALNavigation(app.session());
-            cameraManager = new ALVideoDevice(app.session());
+            cameraManager = new ALPhotoCapture(app.session());
+            videoDeviceManager = new ALVideoDevice(app.session());
             behaviorManager = new ALBehaviorManager(app.session());
             packageManager = new PackageManager(app.session());
             systemManager = new ALSystem(app.session());
@@ -61,48 +70,72 @@ public class NAORobot {
     }
 
     public synchronized List<String> getBehaviors() throws InterruptedException, CallError {
-        return(behaviorManager.async().getInstalledBehaviors().get());
+        return (behaviorManager.async().getInstalledBehaviors().get());
     }
 
     public synchronized List<Object> getTempData() throws InterruptedException, CallError {
         Object cpuTemp = memoryManager.async().getData("Device/SubDeviceList/Head/Temperature/Sensor/Value").get();
-        Object batteryTemp = memoryManager.async().getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value").get();
-        
+        Object batteryTemp = memoryManager.async().getData("Device/SubDeviceList/Battery/Temperature/Sensor/Value")
+                .get();
+
         List<Object> data = new ArrayList<Object>();
 
         data.add(cpuTemp);
         data.add(batteryTemp);
 
-        return(data);
+        return (data);
     }
+/*
+    public synchronized String testTakeImage() throws InterruptedException, CallError {
+        String device = (String) videoDeviceManager.async().subscribe("test", 2, 13, 10).get();
 
-    public synchronized List<Object> takeImage() throws InterruptedException, CallError {
-        String device = cameraManager.async().subscribeCamera("test", 0, 1, 13, 10).get();
-        Object imageObject = cameraManager.async().getDirectRawImageRemote(device).get();
+        videoDeviceManager.async().openCamera(0);
+        videoDeviceManager.async().startCamera(0);
 
-        List<Object> data = (ArrayList<Object>) imageObject;
+        List<Object> dataList = (ArrayList<Object>) videoDeviceManager.async().getDirectRawImageRemote(device).get();
 
-        System.out.println(data.get(6));
+        ByteBuffer bb = (ByteBuffer) dataList.get(6);
+        bb.position(0);
+
+        byte[] imageBytes = Base64.getEncoder().encode(bb.array());
+
+        videoDeviceManager.async().releaseDirectRawImage(device);
+        videoDeviceManager.async().unsubscribe(device);
+
+        return(new String(imageBytes));
+    }
+*/
+
+    public synchronized byte[] takeImage() throws InterruptedException, CallError, IOException {
+        /*  (workaround)
+
+            This is currently a stupidly heavy task for nao!!!
+            
+            It will take an image, save it to hard drive, load it again and convert it to bytes
+            which will be returned to the user.
+
+            There is an easier task which get's raw byte data directly from camera 
+            ALVideoDevice::getDirectRawImageRemote
+            but there were something wrong with the byte data when converting from
+            ByteBuffer -> byte[].
+            
+            This will maybe be fixed if I can get it work with the raw data
+
+        */
         
-        ByteBuffer byteBuffer = (ByteBuffer) data.get(6);
-
-        byte[] byteData;
-      
-        if(byteBuffer.hasArray()) {
-            byteData = byteBuffer.array();
-        }
-        else {
-            byteData = new byte[byteBuffer.capacity()];
-            ((ByteBuffer) byteBuffer.duplicate().clear()).get(byteData);
-        }
+        
+        cameraManager.async().setCameraID(0);
+        cameraManager.async().setResolution(2);
+        cameraManager.async().setPictureFormat("png");
+        ArrayList<String> path = (ArrayList<String>) cameraManager.async().takePicture("//home//nao//recordings/cameras/", "image").get();
     
-        data.remove(6);
-        data.set(6, byteData);
+        File file = new File(path.get(0));
+        BufferedImage originalImage = ImageIO.read(file);
         
-        cameraManager.async().releaseDirectRawImage(device);
-        cameraManager.async().unsubscribe(device);
-
-        System.out.println("Original byteBuffer: " + byteBuffer + "\n Original byteBuffer as byte[]: " + byteData);
+        ByteArrayOutputStream bois = new ByteArrayOutputStream();
+        ImageIO.write(originalImage, "png", bois);
+        byte[] data = bois.toByteArray();
+        bois.close();
 
         return(data);
     }
