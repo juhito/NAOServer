@@ -7,7 +7,6 @@ import java.util.Calendar;
 public class NAOServer {
     private ServerSocket server;
 
-
     public NAOServer(String ip) throws Exception {
         this.server = new ServerSocket();
         this.server.bind(new InetSocketAddress(ip, 8888));
@@ -33,9 +32,8 @@ public class NAOServer {
     }
 
     public static void main(String[] args) throws Exception {
-		NAOServer nss = new NAOServer(""); // MAYBE FIGURE OUT A WAY TO CLEANLY GET UR LOCAL IP
+		NAOServer nss = new NAOServer("0.0.0.0"); // MAYBE FIGURE OUT A WAY TO CLEANLY GET UR LOCAL IP
 
 		nss.listen(args);
-	
 	}
 }

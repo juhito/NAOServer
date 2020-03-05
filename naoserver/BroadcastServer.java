@@ -20,7 +20,6 @@ public class BroadcastServer implements Runnable {
                 byte[] messageBuffer = new byte[15000];
                 System.out.println("New BroadcastServer started");
 
-
                 DatagramPacket messagePacket = new DatagramPacket(messageBuffer, messageBuffer.length);
                 scannerSocket.receive(messagePacket);
 
