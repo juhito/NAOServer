@@ -33,7 +33,7 @@ public class NAOServer {
     }
 
     public static void main(String[] args) throws Exception {
-		NAOServer nss = new NAOServer("192.168.1.118"); // MAYBE FIGURE OUT A WAY TO CLEANLY GET UR LOCAL IP
+		NAOServer nss = new NAOServer(""); // MAYBE FIGURE OUT A WAY TO CLEANLY GET UR LOCAL IP
 
 		nss.listen(args);
 	

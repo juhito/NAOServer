@@ -14,14 +14,14 @@ public class ClientHandler implements Runnable {
     private String clientCommand;
 
     //private static NAORobot robot;
-    private static NAORobot robot;
+    private static FakeNAORobot robot;
 
     public ClientHandler(Socket socket, String[] args) {
         this.socket = socket;
         System.out.println("Client: " + socket.getInetAddress().getHostAddress() + " connected");
 
         if(robot == null)
-            robot = new NAORobot("tcp://192.168.1.118:9559", args);
+            robot = new FakeNAORobot("tcp://192.168.1.118:9559", args);
             //robot = new FakeNAORobot("", args);
 		else
 			System.out.println("ROBOT ALREADY MADE YES");

@@ -106,7 +106,7 @@ public class NAORobot {
     }
 */
 
-    public synchronized byte[] takeImage() throws InterruptedException, CallError, IOException {
+    public synchronized byte[] takeImage(int cameraID, int resolution, String pictureFormat) throws InterruptedException, CallError, IOException {
         /*  (workaround)
 
             This is currently a stupidly heavy task for nao!!!
@@ -124,9 +124,9 @@ public class NAORobot {
         */
         
         
-        cameraManager.async().setCameraID(0);
-        cameraManager.async().setResolution(2);
-        cameraManager.async().setPictureFormat("png");
+        cameraManager.async().setCameraID(cameraID);
+        cameraManager.async().setResolution(resolution);
+        cameraManager.async().setPictureFormat(pictureFormat);
         ArrayList<String> path = (ArrayList<String>) cameraManager.async().takePicture("//home//nao//recordings/cameras/", "image").get();
     
         File file = new File(path.get(0));

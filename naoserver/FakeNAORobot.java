@@ -1,23 +1,62 @@
 package naoserver;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FakeNAORobot {
+import javax.imageio.ImageIO;
 
+public class FakeNAORobot {
 
     public FakeNAORobot(String url, String[] args) {
         System.out.println("Connection to fake NAO was successful");
     }
 
+    public synchronized List<Object> takeImage() throws InterruptedException, IOException {
+        BufferedImage original = ImageIO.read(new File("//home//juhi//Pictures//tor_duck.png"));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(original, "png", baos);
+
+        baos.flush();
+
+        byte[] imageByte = baos.toByteArray();
+        baos.close();
+
+        ByteBuffer byteBuffer = ByteBuffer.wrap(imageByte);
+
+        byte[] byteData;
+      
+        if(byteBuffer.hasArray()) {
+            byteData = byteBuffer.array();
+        }
+        else {
+            byteData = new byte[byteBuffer.capacity()];
+            ((ByteBuffer) byteBuffer.duplicate().clear()).get(byteData);
+        }
+
+
+        List<Object> data = new ArrayList<Object>();
+
+        data.add(640);
+        data.add(480);
+        data.add(2);
+        data.add("fakeColorSpace");
+        data.add(19000);
+        data.add(1900);
+        data.add(byteData);
+
+        return(data);
+    }
+
+
     public synchronized List<String> getBehaviors() throws InterruptedException {
-        return(new ArrayList<String>() {{
-            add("Behavior1");
-            add("Behavior2");
-            add("taichi-dance-free");
-            add("football");
-        }});
+        return(null);
     }
 
     public synchronized void naoMove(float x, float y) throws InterruptedException {
@@ -28,10 +67,11 @@ public class FakeNAORobot {
         Double randomCPUTemp = 1.0 + Math.random() * (80.0 - 1.0);
         Double randomBATTemp = 1.0 + Math.random() * (80.0 - 1.0);
 
-        return(new ArrayList<Double>() {{
-            add(randomCPUTemp);
-            add(randomBATTemp);
-        }});
+        List<Double> data = new ArrayList<>();
+        data.add(randomCPUTemp);
+        data.add(randomBATTemp);
+
+        return(data);
     }
 
     public synchronized Double getBatteryData() throws InterruptedException {
