@@ -22,7 +22,6 @@ import com.aldebaran.qi.helper.proxies.ALMemory;
 import com.aldebaran.qi.helper.proxies.ALMotion;
 import com.aldebaran.qi.helper.proxies.ALNavigation;
 import com.aldebaran.qi.helper.proxies.ALPhotoCapture;
-import com.aldebaran.qi.helper.proxies.ALRobotPosture;
 import com.aldebaran.qi.helper.proxies.ALTextToSpeech;
 import com.aldebaran.qi.helper.proxies.ALVideoDevice;
 import com.aldebaran.qi.helper.proxies.PackageManager;
@@ -38,7 +37,6 @@ public class NAORobot {
     private ALMotion movementManager;
     private ALNavigation navigationManager;
     private ALPhotoCapture cameraManager;
-    private ALVideoDevice videoDeviceManager;
     private ALBehaviorManager behaviorManager;
     private PackageManager packageManager;
     private ALSystem systemManager;
@@ -58,7 +56,6 @@ public class NAORobot {
             movementManager = new ALMotion(app.session());
             navigationManager = new ALNavigation(app.session());
             cameraManager = new ALPhotoCapture(app.session());
-            videoDeviceManager = new ALVideoDevice(app.session());
             behaviorManager = new ALBehaviorManager(app.session());
             packageManager = new PackageManager(app.session());
             systemManager = new ALSystem(app.session());

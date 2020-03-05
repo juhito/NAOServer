@@ -1,4 +1,4 @@
 /lib
 TODO
 *.class
-naoserver/FakeNAORobot.java
+/naoserver/FakeNAORobot.java
