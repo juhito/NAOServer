@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -37,6 +35,7 @@ public class NAORobot {
     private ALMotion movementManager;
     private ALNavigation navigationManager;
     private ALPhotoCapture cameraManager;
+    private ALVideoDevice videoDeviceManager;
     private ALBehaviorManager behaviorManager;
     private PackageManager packageManager;
     private ALSystem systemManager;
@@ -56,6 +55,7 @@ public class NAORobot {
             movementManager = new ALMotion(app.session());
             navigationManager = new ALNavigation(app.session());
             cameraManager = new ALPhotoCapture(app.session());
+            videoDeviceManager = new ALVideoDevice(app.session());
             behaviorManager = new ALBehaviorManager(app.session());
             packageManager = new PackageManager(app.session());
             systemManager = new ALSystem(app.session());
@@ -82,26 +82,30 @@ public class NAORobot {
 
         return (data);
     }
-/*
-    public synchronized String testTakeImage() throws InterruptedException, CallError {
-        String device = (String) videoDeviceManager.async().subscribe("test", 2, 13, 10).get();
 
-        videoDeviceManager.async().openCamera(0);
-        videoDeviceManager.async().startCamera(0);
+    public synchronized byte[] testTakeImage() throws InterruptedException, CallError {
+        // Subscribe to topcamera(0) with resolution(640x480), colorspace(RGB), fps(5)
+        String device = (String) videoDeviceManager.async().subscribeCamera("test", 0, 2, 11, 5).get();
 
-        List<Object> dataList = (ArrayList<Object>) videoDeviceManager.async().getDirectRawImageRemote(device).get();
+        List<Object> dataList = (ArrayList<Object>) videoDeviceManager.async().getImageRemote(device).get();
 
         ByteBuffer bb = (ByteBuffer) dataList.get(6);
-        bb.position(0);
 
-        byte[] imageBytes = Base64.getEncoder().encode(bb.array());
-
-        videoDeviceManager.async().releaseDirectRawImage(device);
+        videoDeviceManager.async().releaseImage(device);
         videoDeviceManager.async().unsubscribe(device);
 
-        return(new String(imageBytes));
+
+        if(bb.hasArray()) {
+            return(bb.array());
+        }
+        
+        byte[] imageBytes = new byte[bb.remaining()];
+
+        bb.get(imageBytes, 0, imageBytes.length);
+
+        return(imageBytes);
     }
-*/
+
 
     public synchronized byte[] takeImage(int cameraID, int resolution, String pictureFormat) throws InterruptedException, CallError, IOException {
         /*  (workaround)
