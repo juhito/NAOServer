@@ -5,12 +5,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import com.aldebaran.qi.AnyObject;
 import com.aldebaran.qi.Application;
 import com.aldebaran.qi.CallError;
 import com.aldebaran.qi.Tuple4;
@@ -21,7 +24,6 @@ import com.aldebaran.qi.helper.proxies.ALMotion;
 import com.aldebaran.qi.helper.proxies.ALNavigation;
 import com.aldebaran.qi.helper.proxies.ALPhotoCapture;
 import com.aldebaran.qi.helper.proxies.ALTextToSpeech;
-import com.aldebaran.qi.helper.proxies.ALVideoDevice;
 import com.aldebaran.qi.helper.proxies.PackageManager;
 import com.aldebaran.qi.helper.proxies.ALSystem;
 
@@ -35,7 +37,6 @@ public class NAORobot {
     private ALMotion movementManager;
     private ALNavigation navigationManager;
     private ALPhotoCapture cameraManager;
-    private ALVideoDevice videoDeviceManager;
     private ALBehaviorManager behaviorManager;
     private PackageManager packageManager;
     private ALSystem systemManager;
@@ -55,7 +56,6 @@ public class NAORobot {
             movementManager = new ALMotion(app.session());
             navigationManager = new ALNavigation(app.session());
             cameraManager = new ALPhotoCapture(app.session());
-            videoDeviceManager = new ALVideoDevice(app.session());
             behaviorManager = new ALBehaviorManager(app.session());
             packageManager = new PackageManager(app.session());
             systemManager = new ALSystem(app.session());
@@ -83,29 +83,14 @@ public class NAORobot {
         return (data);
     }
 
-    public synchronized byte[] testTakeImage() throws InterruptedException, CallError {
-        // Subscribe to topcamera(0) with resolution(640x480), colorspace(RGB), fps(5)
-        String device = (String) videoDeviceManager.async().subscribeCamera("test", 0, 2, 11, 5).get();
+    public synchronized void playRecording(byte[] data) throws Exception {
+        Path path = Paths.get("/home/nao/recordings/microphones/test.wav");
+        Files.write(path, data);
 
-        List<Object> dataList = (ArrayList<Object>) videoDeviceManager.async().getImageRemote(device).get();
+        AnyObject service = app.session().service("ALAudioPlayer");
 
-        ByteBuffer bb = (ByteBuffer) dataList.get(6);
-
-        videoDeviceManager.async().releaseImage(device);
-        videoDeviceManager.async().unsubscribe(device);
-
-
-        if(bb.hasArray()) {
-            return(bb.array());
-        }
-        
-        byte[] imageBytes = new byte[bb.remaining()];
-
-        bb.get(imageBytes, 0, imageBytes.length);
-
-        return(imageBytes);
+        service.call("playFile", path.toAbsolutePath().toString());
     }
-
 
     public synchronized byte[] takeImage(int cameraID, int resolution, String pictureFormat) throws InterruptedException, CallError, IOException {
         /*  (workaround)
@@ -128,7 +113,7 @@ public class NAORobot {
         cameraManager.async().setCameraID(cameraID);
         cameraManager.async().setResolution(resolution);
         cameraManager.async().setPictureFormat(pictureFormat);
-        ArrayList<String> path = (ArrayList<String>) cameraManager.async().takePicture("//home//nao//recordings/cameras/", "image").get();
+        ArrayList<String> path = (ArrayList<String>) cameraManager.async().takePicture("/home/nao/recordings/cameras/", "image").get();
     
         File file = new File(path.get(0));
         BufferedImage originalImage = ImageIO.read(file);
@@ -140,7 +125,6 @@ public class NAORobot {
 
         return(data);
     }
-
 
     public synchronized Integer getBatteryData() throws InterruptedException, CallError {
         return(batteryManager.async().getBatteryCharge().get());

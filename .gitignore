@@ -1,4 +1,6 @@
 /lib
 TODO
+asd.code-workspace
+*.wav
 *.class
-/naoserver/FakeNAORobot.java
+/naoserver/FAKENAO.java
