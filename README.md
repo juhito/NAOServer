@@ -30,7 +30,7 @@ $ cd NAOServer
 3. Compile the application and upload class files to NAO (using FTP or scp)
 4. Run the application on NAO
 ```bash
-$ java -cp /path/to/java-naoqi-sdk-<version>-<platform>.jar:. YourClass
+$ java -cp /path/to/java-naoqi-sdk-<version>-<platform>.jar:. NAOServer
 ```
 
 # License
